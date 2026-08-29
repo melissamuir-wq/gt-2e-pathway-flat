@@ -23,7 +23,23 @@ if (!SUPABASE_URL || !SUPABASE_ANON_KEY) {
   );
 }
 
-const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+// The dashboard shows the RESTful endpoint (".../rest/v1/") right next to the
+// Project URL, and pasting that one instead is easy. supabase-js then builds
+// ".../rest/v1/auth/v1/otp" and the gateway answers "Invalid path specified in
+// request URL" at sign-in -- an error that points at everything except the
+// actual cause. Take the origin and drop whatever path came with it.
+function projectOrigin(raw: string) {
+  try {
+    return new URL(raw.trim()).origin;
+  } catch {
+    throw new Error(
+      `NEXT_PUBLIC_SUPABASE_URL is not a valid URL: "${raw}". ` +
+      'It should look like https://YOUR-PROJECT-REF.supabase.co and nothing more.'
+    );
+  }
+}
+
+const supabase = createClient(projectOrigin(SUPABASE_URL), SUPABASE_ANON_KEY);
 
 const ALLOWED_DOMAINS = ['gt.school', 'alpha.school'];
 

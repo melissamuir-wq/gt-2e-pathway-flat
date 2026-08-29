@@ -303,6 +303,27 @@ function SignIn() {
   const [busy, setBusy] = useState(false);
   const [sent, setSent] = useState(false);
   const [e, setE] = useState('');
+  const [linkErr, setLinkErr] = useState('');
+
+  // A magic link that fails does not throw. Supabase sends the reason back in
+  // the URL fragment -- #error=access_denied&error_code=otp_expired&... -- and
+  // if nobody reads it the page simply renders this form again. That silence
+  // looks exactly like a redirect loop, which is the wrong thing to go and
+  // debug. Read it, say it plainly, then clear it from the address bar.
+  useEffect(() => {
+    const h = window.location.hash.slice(1);
+    if (!h) return;
+    const p = new URLSearchParams(h);
+    const desc = p.get('error_description');
+    if (!desc) return;
+    const code = p.get('error_code');
+    setLinkErr(
+      code === 'otp_expired'
+        ? 'That sign-in link has already been used or has expired. Links work once and last an hour. Request a new one below, and open it in this same browser.'
+        : desc
+    );
+    history.replaceState(null, '', window.location.pathname);
+  }, []);
 
   async function go(ev: React.FormEvent) {
     ev.preventDefault();
@@ -331,6 +352,7 @@ function SignIn() {
       </header>
       <main>
         <div className="signin card">
+          {linkErr && <div className="note stop" style={{ marginBottom: 16 }}><b>Sign-in link did not work</b><br />{linkErr}</div>}
           {sent ? (
             <>
               <h2>Check your email</h2>

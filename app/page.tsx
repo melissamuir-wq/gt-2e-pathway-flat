@@ -313,8 +313,12 @@ function SignIn() {
       return;
     }
     setBusy(true);
+    // Trailing slash matters. Supabase matches this against the Redirect URLs
+    // allowlist as a glob, and a bare origin with no path does not match the
+    // usual "https://host/**" entry -- it comes back as "Invalid path
+    // specified in request URL" before any email is sent.
     const { error } = await supabase.auth.signInWithOtp({
-      email: a, options: { emailRedirectTo: window.location.origin },
+      email: a, options: { emailRedirectTo: window.location.origin + '/' },
     });
     setBusy(false);
     if (error) setE(error.message); else setSent(true);

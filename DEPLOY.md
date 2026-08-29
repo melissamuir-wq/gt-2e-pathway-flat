@@ -62,12 +62,20 @@ Authentication → **URL Configuration**. Sign-in calls
 `emailRedirectTo: window.location.origin`, so every origin the app is served
 from has to be allowlisted or the magic link will bounce.
 
-- **Site URL:** `https://your-production-domain.com`
+- **Site URL:** `https://your-production-domain.com` (no trailing slash, no path)
 - **Redirect URLs:** add each of these on its own line:
+  - `https://your-production-domain.com` ← **the bare origin, no wildcard**
   - `https://your-production-domain.com/**`
-  - `http://localhost:3000/**` (local dev)
+  - `http://localhost:3000` and `http://localhost:3000/**` (local dev)
   - `https://*-YOUR-TEAM.vercel.app/**` (Vercel preview deploys — skip this if
     you turn previews off in 3.4)
+
+**Add the bare origin as well as the `/**` pattern.** These entries are matched
+as globs, and `https://host/**` expects a path, so it does not match a bare
+`https://host`. Miss it and sign-in fails with *"Invalid path specified in
+request URL"* before any email is sent — which reads like an email problem and
+is not one. `SignIn` now sends `origin + '/'` for this reason, but keep both
+entries: the trailing slash is easy to lose in a future edit.
 
 ### 1.6 Auth — email delivery ⚠️ the usual blocker
 Authentication → **Emails**.

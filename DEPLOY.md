@@ -50,12 +50,27 @@ anyone who has the anon key out of the JS bundle. Stop and fix it before
 deploying.
 
 ### 1.4 Copy the two keys
-Project Settings → **API**:
+Project Settings → **API** (newer dashboards split this into **Data API** for
+the URL and **API Keys** for the key; the **Connect** button at the top of the
+project also shows both, pre-formatted):
 
 - **Project URL** → `NEXT_PUBLIC_SUPABASE_URL`
-- **anon / public** key → `NEXT_PUBLIC_SUPABASE_ANON_KEY`
+- **publishable** (`sb_publishable_…`) or legacy **anon / public** (`eyJ…`)
+  → `NEXT_PUBLIC_SUPABASE_ANON_KEY`
 
-Never put the `service_role` key in a `NEXT_PUBLIC_` variable. It bypasses RLS.
+⚠️ **Take the Project URL, not the RESTful endpoint.** The Data API page shows
+`https://YOUR-REF.supabase.co/rest/v1/` right beside it, and grabbing that one
+instead is the easy mistake. `supabase-js` then builds
+`…/rest/v1/auth/v1/otp`, and sign-in fails with *"Invalid path specified in
+request URL"* — an error that reads like a redirect or email problem and is
+neither. The value you want ends at `.supabase.co`, with nothing after it.
+
+`app/page.tsx` now takes the origin of whatever you supply, so a stray path is
+tolerated. Set it correctly anyway; the next person reading the variable should
+not have to know about the workaround.
+
+Never put the `service_role` or `sb_secret_…` key in a `NEXT_PUBLIC_` variable.
+It bypasses RLS.
 
 ### 1.5 Auth — Site URL and redirects
 Authentication → **URL Configuration**. Sign-in calls

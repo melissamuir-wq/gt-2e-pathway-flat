@@ -1,0 +1,9 @@
+node_modules
+.next
+.env
+.env.local
+next-env.d.ts
+*.tsbuildinfo
+
+# machine-local Claude Code permissions; shared .claude/settings.json is fine
+.claude/settings.local.json
